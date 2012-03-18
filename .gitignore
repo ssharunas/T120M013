@@ -1,0 +1,5 @@
+bin/*.cpp
+bin/*.hpp
+bin/*.c
+*.o
+bin/prep

@@ -1,0 +1,10 @@
+program 'abc';
+var a,b,c,d: integer;
+  begin
+	input ( a, b );
+	c := a * b;
+	output ( c ); as
+	input ( d );
+	d := c + d;
+	output ( d );
+end;

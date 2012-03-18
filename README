@@ -1,8 +1,24 @@
 PROGRAMŲ PRIEŽIŪRA IR TOBULINIMAS (T120M013)
-Programų analizė, įvertinimas ir tobulinimas
+Laboratorinis darbas Nr. 1
 
-Original source code in branch [vanilla_L1]
-Code is fixed so that i could be compiled under linux enviroment.
-To make compiling easier, build.sh script was added. 
+=== Kompiliavimui reikalingi paketai: ===
+	* gcc
+	* g++
+	* lex
+	* yacc
 
-Checkout README in branch [vanilla_L1] for more instructions.
+Kompiliavimui galima panaudoti paruoštą scriptą:
+	* Atsidarom terminalą
+	* cd <kelias iki projekto>/bin
+	* ./build.bat
+	
+!NOTE: scriptas išvalo visus *.cpp, *.hpp, *.c ir *.o failus iš bin direktorijos kiekvieną kartą leidžiant!
+       Jei į bin direktoriją dėsit savo kodą, pataisykit build.sh kad neištrinų reikalingų failų!
+
+=== Programos paleidimas ===
+Sukompiliuotas kompiliatorius priima vieną argumentą - failo pavadinimą, kuriame turėtų būti progrmos 
+kodas (žr. test.txt ir test1.txt).
+
+	* Atsidarom terminalą
+	* cd <kelias iki projekto>/bin
+	* ./prep test1.txt
