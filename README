@@ -1,0 +1,8 @@
+PROGRAMŲ PRIEŽIŪRA IR TOBULINIMAS (T120M013)
+Programų analizė, įvertinimas ir tobulinimas
+
+Original source code in branch [vanilla_L1]
+Code is fixed so that i could be compiled under linux enviroment.
+To make compiling easier, build.sh script was added. 
+
+Checkout README in branch [vanilla_L1] for more instructions.
