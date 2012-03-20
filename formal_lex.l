@@ -29,6 +29,10 @@ name {letter}({letter}|{digit})*
 	yylval.sval=strdup(yytext);
 	return T_INTEGER;
 	}
+{white}*double {
+	yylval.sval=strdup(yytext);
+	return T_DOUBLE;
+	}
 	
 {white}*begin {
 	yylval.sval=strdup(yytext);
@@ -50,6 +54,11 @@ name {letter}({letter}|{digit})*
 	return T_OUTPUT;
 	}
 
+{white}*tanh {
+	yylval.sval=strdup(yytext);
+	return T_FUNCTION_TANH;
+	}
+	
 {white}*\({white}* 	{
 	yylval.sval=strdup(yytext);
 	return T_LEFTBR;

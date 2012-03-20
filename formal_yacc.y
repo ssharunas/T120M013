@@ -16,13 +16,13 @@
 extern int yylineno;
 extern "C" int yylex();
 
-Variables *topVariable;
+//Variables *topVariable;
 
 extern "C"    
 { 
 void yyerror(const char *str)    
 {    
-	fprintf(stderr,"Error: %s\n",str);    
+	fprintf(stderr,"Error: %s at line %d\n",str, yylineno);
 }    
 
 int yywrap()    
@@ -38,6 +38,7 @@ int yywrap()
 
 %token <sval>	T_PROGRAM
 %token <sval>	T_INTEGER
+%token <sval>	T_DOUBLE
 %token <sval>	T_BEGIN
 %token <sval>	T_END
 %token <sval>	T_INPUT
@@ -53,9 +54,12 @@ int yywrap()
 %token <sval>	T_PLUS
 %token <sval>	T_MULT
 %token <sval>	T_TWOPOINTS
+%token <sval>	T_FUNCTION_TANH
 
 %type <sval> program
 %type <sval> variable_declaration
+%type <sval> variable_declaration_section
+
 %type <sval> variable_declaration_list
 %type <sval> declare_variable
 %type <sval> input_variable
@@ -74,18 +78,21 @@ int yywrap()
 
 %%
 
-program: T_PROGRAM T_QUOTE T_NAME T_QUOTE T_COMAPOINT variable_declaration T_BEGIN statement_list T_END T_COMAPOINT ;
+program: T_PROGRAM T_QUOTE T_NAME T_QUOTE T_COMAPOINT variable_declaration_section T_BEGIN statement_list T_END T_COMAPOINT ;
 
-variable_declaration: T_VAR variable_declaration_list T_TWOPOINTS variable_type T_COMAPOINT ;
+variable_declaration_section : variable_declaration_section variable_declaration
+				| variable_declaration ;
+
+variable_declaration: T_VAR variable_declaration_list T_TWOPOINTS variable_type T_COMAPOINT
+{
+	Variables::startDeclaration();
+};
 
 variable_declaration_list: variable_declaration_list T_COMA declare_variable
 				| declare_variable ;
 
 declare_variable: T_NAME {
-	Variables *v;
-	v=new Variables($1);
-	if (!topVariable) topVariable=v;
-		else topVariable->addVariable(v);
+	Variables::Create($1);
 };
 
 variable_input_list: variable_input_list T_COMA input_variable
@@ -95,18 +102,27 @@ input_variable: T_NAME {
 	int value;
 	printf("\nEnter value of %s: ", $1);
 	scanf("%d", &value);
-	topVariable->setValue($1,value);
+	Variable* var = Variables::Get($1);
+	
+	var->setValue(value);
 };
 
 variable_output_list: variable_output_list T_COMA output_variable
 				| output_variable ;
 
 output_variable: T_NAME {
-	int value=topVariable->getValue($1);
-	printf("\n%s = %d\n",$1,value);
+	Variable* var = Variables::Get($1);
+	printf("\n%s = %d [type = %d] \n",$1, var->getValue(), var->getType());
 };
 
-variable_type: T_INTEGER ;
+variable_type: T_INTEGER 
+{
+	Variables::setType(VarType::TYPE_INTEGER);
+} 
+| T_DOUBLE 
+{
+	Variables::setType(VarType::TYPE_REAL);
+};
 
 statement_list: statement_list statement
 			| statement ;
@@ -115,8 +131,10 @@ statement: expression_statement
 		| input_statement
 		| output_statement ;
 
-expression_statement: T_NAME T_ASSIGNMENT expression T_COMAPOINT {
-	topVariable->setValue($1,$3);
+expression_statement: T_NAME T_ASSIGNMENT expression T_COMAPOINT 
+{
+	Variable* var = Variables::Get($1);
+	var->setValue($3);
 };
 
 input_statement: T_INPUT T_LEFTBR variable_input_list T_RIGHTBR T_COMAPOINT ;
@@ -129,8 +147,10 @@ expression: expression T_PLUS expression {
 		| expression T_MULT expression {
 	$$=$1*$3;
 }
-		| T_NAME {
-	$$=topVariable->getValue($1);
+		| T_NAME 
+{
+	Variable* var = Variables::Get($1);
+	$$=var->getValue();
 };
 
 %%

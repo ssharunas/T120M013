@@ -8,10 +8,12 @@ extern int yylineno;
 extern int yy_scan_string(const char* str);
 extern FILE *yyin;
 extern int error_flag;
+extern int yydebug; 
 
 int main(int argc, char* argv[])
 {
 	char *ret;
+	yydebug=0; 
 
 	printf("Running application...\n");
 
