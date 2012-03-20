@@ -18,7 +18,8 @@ class Variable
 {
 private:
 	const char *name;
-	int value;
+	double value;
+	
 	VarType::Type type;
 
 public:
@@ -26,11 +27,11 @@ public:
 	Variable(const char *name);
 	virtual ~Variable();
 
-	int getValue();
+	double getValue();
 	VarType::Type getType();
 
 	void setType(VarType::Type type);
-	void setValue(int value);
+	void setValue(double value);
 	const char* getName();
 };
 

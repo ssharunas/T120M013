@@ -1,6 +1,7 @@
 %union
 {
 	char* sval;
+	double dval;
 	int ival;
 }
 
@@ -54,7 +55,9 @@ int yywrap()
 %token <sval>	T_PLUS
 %token <sval>	T_MULT
 %token <sval>	T_TWOPOINTS
-%token <sval>	T_FUNCTION_TANH
+%token <dval>	T_FUNCTION_TANH
+%token <dval>	DOUBLE
+%token <ival>	INTEGER
 
 %type <sval> program
 %type <sval> variable_declaration
@@ -72,7 +75,7 @@ int yywrap()
 %type <sval> expression_statement
 %type <sval> input_statement
 %type <sval> output_statement
-%type <ival> expression
+%type <dval> expression
 
 %left T_PLUS T_MULT
 
@@ -99,10 +102,20 @@ variable_input_list: variable_input_list T_COMA input_variable
 				| input_variable ;
 
 input_variable: T_NAME {
-	int value;
-	printf("\nEnter value of %s: ", $1);
-	scanf("%d", &value);
+	double value = 0;
 	Variable* var = Variables::Get($1);
+	
+	char** type = new char*[2];
+	type[VarType::TYPE_INTEGER] = (char *) "int";
+	type[VarType::TYPE_REAL] = (char *)"double";
+	
+	printf("\nEnter value of %s [%s]: ", $1, type[var->getType()]);
+	scanf("%lf", &value);
+	
+	if(var->getType() == VarType::TYPE_INTEGER)
+	{
+		value = (long)(value);
+	}
 	
 	var->setValue(value);
 };
@@ -112,7 +125,21 @@ variable_output_list: variable_output_list T_COMA output_variable
 
 output_variable: T_NAME {
 	Variable* var = Variables::Get($1);
-	printf("\n%s = %d [type = %d] \n",$1, var->getValue(), var->getType());
+	
+	switch(var->getType())
+	{
+		case VarType::TYPE_INTEGER:
+			printf("\n%s = %d\n",$1, (int) var->getValue());
+			break;
+		
+		case VarType::TYPE_REAL:
+			printf("\n%s = %lf\n",$1, var->getValue());
+			break;
+		
+		default:
+			fprintf(stderr, "failed to output: unknown type.\n");
+			break;
+	}
 };
 
 variable_type: T_INTEGER 
@@ -133,7 +160,8 @@ statement: expression_statement
 
 expression_statement: T_NAME T_ASSIGNMENT expression T_COMAPOINT 
 {
-	Variable* var = Variables::Get($1);
+	Variable* var = Variables::Get($1);	
+/* 	printf("%s = %f\n", var->getName(), $3); */	
 	var->setValue($3);
 };
 
@@ -142,15 +170,30 @@ input_statement: T_INPUT T_LEFTBR variable_input_list T_RIGHTBR T_COMAPOINT ;
 output_statement: T_OUTPUT T_LEFTBR variable_output_list T_RIGHTBR T_COMAPOINT ;
 
 expression: expression T_PLUS expression {
-	$$=$1+$3;
+	
+/* 	printf("%lf + %lf = %lf\n", $1, $3, $1 + $3); */
+	
+	$$ = $1 + $3;
 }
-		| expression T_MULT expression {
-	$$=$1*$3;
+		| expression T_MULT expression 
+{
+/* 	printf("%lf * %lf = %lf\n", $1, $3, $1 + $3); */
+	
+	$$ = $1 * $3;
 }
 		| T_NAME 
 {
 	Variable* var = Variables::Get($1);
-	$$=var->getValue();
+	
+// 	double z = var->getValue();
+// 	char *data = (char *)&z;
+// 	for(int i =0; i < 8; i++)
+// 	{
+// 		fprintf(stderr, "%x | ", (char)data[i]);
+// 	}
+// 	printf("returned: %f\n", z);
+	
+	$$ = var->getValue();
 };
 
 %%

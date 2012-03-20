@@ -13,7 +13,7 @@ Variable::~Variable()
 
 }
 
-int Variable::getValue()
+double Variable::getValue()
 {
 	return value;
 }
@@ -23,7 +23,7 @@ VarType::Type Variable::getType()
 	return type;
 }
 
-void Variable::setValue(int value)
+void Variable::setValue(double value)
 {
 	this->value=value;
 }
