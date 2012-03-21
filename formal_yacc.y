@@ -8,6 +8,7 @@
 %{
 #define YYTEXT yytext
 #include <stdio.h>
+#include <math.h>
 #include <string.h>
 #include <malloc.h>
 
@@ -55,7 +56,7 @@ int yywrap()
 %token <sval>	T_PLUS
 %token <sval>	T_MULT
 %token <sval>	T_TWOPOINTS
-%token <dval>	T_FUNCTION_TANH
+%token <sval>	T_FUNCTION_TANH
 %token <dval>	DOUBLE
 %token <ival>	INTEGER
 
@@ -76,6 +77,9 @@ int yywrap()
 %type <sval> input_statement
 %type <sval> output_statement
 %type <dval> expression
+%type <dval> tanh_function
+%type <dval> argument
+%type <dval> number
 
 %left T_PLUS T_MULT
 
@@ -123,7 +127,8 @@ input_variable: T_NAME {
 variable_output_list: variable_output_list T_COMA output_variable
 				| output_variable ;
 
-output_variable: T_NAME {
+output_variable: T_NAME 
+{
 	Variable* var = Variables::Get($1);
 	
 	switch(var->getType())
@@ -140,6 +145,9 @@ output_variable: T_NAME {
 			fprintf(stderr, "failed to output: unknown type.\n");
 			break;
 	}
+} | tanh_function
+{
+	printf("\ntanh = %lf\n",$1);
 };
 
 variable_type: T_INTEGER 
@@ -160,8 +168,7 @@ statement: expression_statement
 
 expression_statement: T_NAME T_ASSIGNMENT expression T_COMAPOINT 
 {
-	Variable* var = Variables::Get($1);	
-/* 	printf("%s = %f\n", var->getName(), $3); */	
+	Variable* var = Variables::Get($1);
 	var->setValue($3);
 };
 
@@ -169,31 +176,33 @@ input_statement: T_INPUT T_LEFTBR variable_input_list T_RIGHTBR T_COMAPOINT ;
 
 output_statement: T_OUTPUT T_LEFTBR variable_output_list T_RIGHTBR T_COMAPOINT ;
 
-expression: expression T_PLUS expression {
-	
-/* 	printf("%lf + %lf = %lf\n", $1, $3, $1 + $3); */
-	
-	$$ = $1 + $3;
-}
-		| expression T_MULT expression 
+tanh_function: T_FUNCTION_TANH T_LEFTBR argument T_RIGHTBR 
 {
-/* 	printf("%lf * %lf = %lf\n", $1, $3, $1 + $3); */
-	
-	$$ = $1 * $3;
-}
-		| T_NAME 
+	$$ = tanh($3);
+};
+
+argument: T_NAME 
 {
 	Variable* var = Variables::Get($1);
-	
-// 	double z = var->getValue();
-// 	char *data = (char *)&z;
-// 	for(int i =0; i < 8; i++)
-// 	{
-// 		fprintf(stderr, "%x | ", (char)data[i]);
-// 	}
-// 	printf("returned: %f\n", z);
-	
 	$$ = var->getValue();
-};
+} | number;
+
+number: DOUBLE | INTEGER { $$ = (double) $1; };
+
+expression: expression T_PLUS expression 
+{
+	$$ = $1 + $3;
+}
+| expression T_MULT expression 
+{
+	$$ = $1 * $3;
+}
+| T_NAME 
+{
+	Variable* var = Variables::Get($1);
+	$$ = var->getValue();
+}
+| tanh_function
+;
 
 %%

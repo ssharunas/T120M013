@@ -18,12 +18,10 @@ name {letter}({letter}|{digit})*
 %%
 
 [0-9]+\.[0-9]+ {
-	printf("Found a floating-point number: %s\n", yytext);
 	yylval.dval = atof(yytext);
 	return DOUBLE;
 	}
 [0-9]+ {
-	printf("Found an integer: %s\n", yytext); 
 	 yylval.ival = atoi(yytext);
 	return INTEGER;
 	}
