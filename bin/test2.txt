@@ -7,5 +7,5 @@ var d,e: double;
 	output ( c );
 	d := a + tanh(c);
 	output ( d );
-	output ( d, tanh(d), tanh(2), tanh(1.5) );
+	output ( d, tanh(d), tanh(2), tanh(1.5), tanh(a) );
 end;
