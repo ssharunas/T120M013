@@ -1,0 +1,101 @@
+$
+"Enter memory allocation scheme" {ByteBufferAs, Heap, Direct} M:=ByteBufferAs;
+M eq {ByteBufferAs} "Enter byte ordering" {B, L} O_1:=B;
+M eq {Direct} "Enter byte ordering" {S, U} O_2:=S;
+$
+@if[M eq {ByteBufferAs}, 
+	{@move[O,O_1]@move[construct_type,{ByteBuffer}]@move[construct_var,{bb}]@move[buffer_var,{bb}]}
+]
+@if[M eq {Direct},
+	{@move[O,O_2]@move[construct_type,{DirectBuffer}]@move[construct_var,{db}]@move[buffer_var,{this}]}
+]
+@if[M eq {Heap},
+	{@move[O,{ }]@move[construct_type,{float[]}]@move[construct_var,{buf}]@move[buffer_var,{hb}]}
+]
+
+package java.nio;
+@if[M eq {Direct}, {
+import sun.misc.Cleaner;
+import sun.misc.Unsafe;
+import sun.nio.ch.DirectBuffer;
+import sun.nio.ch.FileChannelImpl;
+}]
+class @sub[M]FloatBufferR@sub[O]
+    extends @sub[M]FloatBuffer@sub[O]@if[M eq {Direct}, {
+    implements DirectBuffer}]
+{
+@if[M eq {ByteBufferAs},
+{    @sub[M]FloatBufferR@sub[O](ByteBuffer bb) \{
+		super(bb);
+    \}
+}]
+    @sub[M]FloatBufferR@sub[O](@sub[construct_type] @sub[construct_var],
+		int mark, int pos, int lim, int cap,
+		int off)
+    {
+		super(@sub[construct_var], mark, pos, lim, cap, off);
+    }
+
+    public FloatBuffer slice() {
+		int pos = this.position();
+		int lim = this.limit();
+		assert (pos <= lim);
+		int rem = (pos <= lim ? lim - pos : 0);
+		int off = (pos << 2)@if[M eq {ByteBufferAs},{ + offset}];
+        assert (off >= 0);
+		return new @sub[M]FloatBufferR@sub[O](@sub[buffer_var], -1, 0, rem, rem, off);
+    }
+
+    public FloatBuffer duplicate() {
+		return new @sub[M]FloatBufferR@sub[O](@sub[buffer_var],
+			this.markValue(),
+			this.position(),
+			this.limit(),
+			this.capacity(),
+			@if[M eq {Direct},{0},{offset}]);
+    }
+
+    public FloatBuffer asReadOnlyBuffer() {
+		return duplicate();
+    }
+
+    public FloatBuffer put(float x) {
+		throw new ReadOnlyBufferException();
+    }
+
+    public FloatBuffer put(int i, float x) {
+		throw new ReadOnlyBufferException();
+    }
+@if[M neq {ByteBufferAs},
+{
+    public FloatBuffer put(FloatBuffer src) \{
+		throw new ReadOnlyBufferException();
+    \}
+
+    public FloatBuffer put(float[] src, int offset, int length) \{
+		throw new ReadOnlyBufferException();
+    \}
+}]
+    public FloatBuffer compact() {
+		throw new ReadOnlyBufferException();
+    }
+
+    public boolean isDirect() {
+		return @if[M eq {ByteBufferAs}, {bb.isDirect()}, {true}];
+    }
+
+    public boolean isReadOnly() {
+		return true;
+    }
+
+    public ByteOrder order() {
+		return @if[O eq {B}, {ByteOrder.BIG_ENDIAN;},
+			{@if[O eq {L}, {ByteOrder.LITTLE_ENDIAN;},
+				{@if[M eq {Direct}, 
+					{((ByteOrder.nativeOrder() @if[O eq {S}, {==}, {!=}] ByteOrder.BIG_ENDIAN)
+			? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);}
+				]}
+			]}
+		]
+    }
+}

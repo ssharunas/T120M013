@@ -1,8 +1,9 @@
 PROGRAMŲ PRIEŽIŪRA IR TOBULINIMAS (T120M013)
 Programų analizė, įvertinimas ir tobulinimas
 
-Original source code in branch [vanilla_L1]
-Code is fixed so that i could be compiled under linux enviroment.
-To make compiling easier, build.sh script was added. 
+Code for L2 individual task no 32.
 
-Checkout README in branch [vanilla_L1] for more instructions.
+TODO folder contains original classes that sould be generated from L1.reu
+These classes are copied from nio folder (only empty lines were removed).
+
+Output is generated to file out.java
