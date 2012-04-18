@@ -24,26 +24,46 @@ class @sub[M]FloatBufferR@sub[O]
     extends @sub[M]FloatBuffer@sub[O]@if[M eq {Direct}, {
     implements DirectBuffer}]
 {
+@if[M eq {Heap},
+{    HeapFloatBufferR (int cap, int lim) \{
+		super(cap, lim);
+		this.isReadOnly = true;
+    \}
+
+    HeapFloatBufferR (float[] buf, int off, int len) \{
+		super(buf, off, len);
+		this.isReadOnly = true;
+    \}}]
 @if[M eq {ByteBufferAs},
 {    @sub[M]FloatBufferR@sub[O](ByteBuffer bb) \{
 		super(bb);
     \}
 }]
-    @sub[M]FloatBufferR@sub[O](@sub[construct_type] @sub[construct_var],
+    @if[M eq {Heap},{protected }]@sub[M]FloatBufferR@sub[O](@sub[construct_type] @sub[construct_var],
 		int mark, int pos, int lim, int cap,
 		int off)
     {
-		super(@sub[construct_var], mark, pos, lim, cap, off);
+		super(@sub[construct_var], mark, pos, lim, cap, off);@if[M eq {Heap},
+		{
+		this.isReadOnly = true;}]
     }
 
     public FloatBuffer slice() {
-		int pos = this.position();
+	@if[M eq {Heap},
+{	return new HeapFloatBufferR (hb,
+			-1,
+			0,
+			this.remaining(),
+			this.remaining(),
+			this.position() + offset);},
+	{	int pos = this.position();
 		int lim = this.limit();
 		assert (pos <= lim);
 		int rem = (pos <= lim ? lim - pos : 0);
 		int off = (pos << 2)@if[M eq {ByteBufferAs},{ + offset}];
         assert (off >= 0);
-		return new @sub[M]FloatBufferR@sub[O](@sub[buffer_var], -1, 0, rem, rem, off);
+		return new @sub[M]FloatBufferR@sub[O](@sub[buffer_var], -1, 0, rem, rem, off);}
+	]
     }
 
     public FloatBuffer duplicate() {
@@ -79,11 +99,12 @@ class @sub[M]FloatBufferR@sub[O]
     public FloatBuffer compact() {
 		throw new ReadOnlyBufferException();
     }
-
-    public boolean isDirect() {
+@if[M neq {Heap},
+{
+    public boolean isDirect() \{
 		return @if[M eq {ByteBufferAs}, {bb.isDirect()}, {true}];
-    }
-
+    \}
+}]
     public boolean isReadOnly() {
 		return true;
     }
@@ -93,7 +114,8 @@ class @sub[M]FloatBufferR@sub[O]
 			{@if[O eq {L}, {ByteOrder.LITTLE_ENDIAN;},
 				{@if[M eq {Direct}, 
 					{((ByteOrder.nativeOrder() @if[O eq {S}, {==}, {!=}] ByteOrder.BIG_ENDIAN)
-			? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);}
+			? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);},
+			{ByteOrder.nativeOrder();}
 				]}
 			]}
 		]
