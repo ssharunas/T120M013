@@ -1,5 +1,6 @@
 program 'abc';
-var a,b,c,d: integer;
+var d: double;
+var a,b,c: integer;
   begin
 	input ( a, b );
 	c := a * b;
